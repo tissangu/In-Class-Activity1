@@ -1084,9 +1084,24 @@
     }
 
     function toggleTaskCompletion(id) {
-      const target = tasks.find(t => t.id === id);
-      if (target) {
+      const targetIndex = tasks.findIndex(t => t.id === id);
+      if (targetIndex !== -1) {
+        const [target] = tasks.splice(targetIndex, 1);
         target.completed = !target.completed;
+
+        if (target.completed) {
+          // Automatically move completed task to the bottom of the list
+          tasks.push(target);
+        } else {
+          // If unchecked, place it back with active tasks (right above completed tasks)
+          const firstCompletedIndex = tasks.findIndex(t => t.completed);
+          if (firstCompletedIndex !== -1) {
+            tasks.splice(firstCompletedIndex, 0, target);
+          } else {
+            tasks.push(target);
+          }
+        }
+
         saveTasks();
         renderTasks();
       }
