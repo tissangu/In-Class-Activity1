@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudySprint – Student Daily Task & Priority Planner</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      
+      --high-bg: #fef2f2;
+      --high-text: #b91c1c;
+      --high-border: #fca5a5;
+
+      --med-bg: #fffbeb;
+      --med-text: #b45309;
+      --med-border: #fcd34d;
+
+      --low-bg: #f0fdf4;
+      --low-text: #15803d;
+      --low-border: #86efac;
+
+      --danger-bg: #fee2e2;
+      --danger-text: #dc2626;
+
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 1.5rem 1rem 3rem;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* Header Section */
+    header {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+
+    .badge-app {
+      display: inline-block;
+      padding: 0.3rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 9999px;
+      margin-bottom: 0.6rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .app-description {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* Progress & Stats Bar */
+    .progress-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .progress-stats {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      background-color: #f1f5f9;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #4f46e5);
+      border-radius: 9999px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* Friendly Alert Banner */
+    .alert-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 1.2rem;
+      margin-bottom: 1.25rem;
+      border-radius: var(--radius);
+      background: #fef2f2;
+      border: 1px solid var(--high-border);
+      color: var(--high-text);
+      font-size: 0.925rem;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    .alert-banner.visible {
+      display: flex;
+    }
+
+    .alert-content {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .alert-close {
+      background: none;
+      border: none;
+      color: var(--high-text);
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+      padding: 0.2rem;
+    }
+
+    /* Add Task Form Card */
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.75rem;
+    }
+
+    .form-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .task-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 0.85rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .input-group label {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background-color: #fff;
+      transition: var(--transition);
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.4rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      padding: 0.45rem 0.85rem;
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+      color: var(--text-main);
+    }
+
+    /* List Controls & Filters */
+    .list-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .filter-tabs {
+      display: flex;
+      background: #f1f5f9;
+      padding: 0.25rem;
+      border-radius: 8px;
+      gap: 0.2rem;
+    }
+
+    .filter-btn {
+      border: none;
+      background: transparent;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .filter-btn.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .list-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    /* Task List Items */
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .task-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.85rem;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .task-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1;
+    }
+
+    .task-card.priority-high {
+      border-left: 5px solid #ef4444;
+    }
+    .task-card.priority-med {
+      border-left: 5px solid #f59e0b;
+    }
+    .task-card.priority-low {
+      border-left: 5px solid #10b981;
+    }
+
+    .task-card.completed {
+      opacity: 0.65;
+      background: #fafafa;
+      border-color: var(--border);
+    }
+
+    .task-main {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Custom Checkbox */
+    .custom-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border: 2px solid #cbd5e1;
+      border-radius: 6px;
+      cursor: pointer;
+      display: grid;
+      place-content: center;
+      transition: var(--transition);
+      flex-shrink: 0;
+      background: #fff;
+    }
+
+    .custom-checkbox:hover {
+      border-color: var(--primary);
+    }
+
+    .custom-checkbox:checked {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .custom-checkbox:checked::before {
+      content: "✓";
+      color: white;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .task-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .task-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .task-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    .task-card.completed .task-title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.775rem;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .tag-course {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .tag-high {
+      background: var(--high-bg);
+      color: var(--high-text);
+      border: 1px solid var(--high-border);
+    }
+
+    .tag-med {
+      background: var(--med-bg);
+      color: var(--med-text);
+      border: 1px solid var(--med-border);
+    }
+
+    .tag-low {
+      background: var(--low-bg);
+      color: var(--low-text);
+      border: 1px solid var(--low-border);
+    }
+
+    .tag-time {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .tag-rank {
+      background: #f8fafc;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      font-family: monospace;
+      font-size: 0.75rem;
+    }
+
+    /* Actions Column */
+    .task-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .icon-btn:hover {
+      background: #f1f5f9;
+      color: var(--text-main);
+      border-color: var(--border);
+    }
+
+    .icon-btn.btn-delete:hover {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border-color: #fca5a5;
+    }
+
+    .icon-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      background: var(--card-bg);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      color: var(--text-muted);
+    }
+
+    .empty-state-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state h3 {
+      font-size: 1.15rem;
+      color: var(--text-main);
+      margin-bottom: 0.25rem;
+    }
+
+    .empty-state p {
+      font-size: 0.925rem;
+    }
+
+    /* Footer Info */
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive styling for phones */
+    @media (max-width: 650px) {
+      body {
+        padding: 1rem 0.75rem 2.5rem;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      .app-description {
+        font-size: 0.95rem;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .list-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-tabs {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .filter-btn {
+        flex: 1;
+        text-align: center;
+        padding: 0.4rem 0.2rem;
+        font-size: 0.8rem;
+      }
+
+      .list-actions {
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .task-card {
+        padding: 0.85rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.65rem;
+      }
+
+      .task-controls {
+        justify-content: flex-end;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 0.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <span class="badge-app">Student Productivity Suite</span>
+      <h1>StudySprint</h1>
+      <p class="app-description">
+        A distraction-free daily planner designed for students to organize assignments, rank them by priority, and conquer their study goals.
+      </p>
+    </header>
+
+    <!-- Progress Card -->
+    <div class="progress-card">
+      <div class="progress-header">
+        <span>Today's Completion</span>
+        <span class="progress-stats" id="progressStats">0 of 0 tasks completed (0%)</span>
+      </div>
+      <div class="progress-track" role="progressbar" aria-label="Tasks completion progress">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <!-- Friendly Error / Notice Banner -->
+    <div class="alert-banner" id="alertBanner" role="alert">
+      <div class="alert-content">
+        <span id="alertIcon">⚠️</span>
+        <span id="alertText">Friendly error message goes here.</span>
+      </div>
+      <button class="alert-close" id="alertCloseBtn" title="Dismiss" aria-label="Dismiss message">✕</button>
+    </div>
+
+    <!-- Task Input Form -->
+    <div class="form-card">
+      <div class="form-title">
+        <span>✏️ Add New Daily Task</span>
+      </div>
+      <form class="task-form" id="taskForm">
+        <div class="input-group">
+          <label for="taskTitle">Task or Assignment Title *</label>
+          <input 
+            type="text" 
+            id="taskTitle" 
+            placeholder="e.g., Complete Physics lab report questions 1-5" 
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="input-group">
+            <label for="taskCourse">Subject / Course (Optional)</label>
+            <input 
+              type="text" 
+              id="taskCourse" 
+              placeholder="e.g., Physics, CS 101, Math" 
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="input-group">
+            <label for="taskPriority">Priority Level *</label>
+            <select id="taskPriority">
+              <option value="high" selected>🔴 High (Urgent / Due Today)</option>
+              <option value="med">🟡 Medium (Important)</option>
+              <option value="low">🟢 Low (Can do later)</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="taskTime">Time / Due By (Optional)</label>
+            <select id="taskTime">
+              <option value="">No specific time</option>
+              <optgroup label="Times of Day (30-min increments)">
+                <option value="12:00 AM">12:00 AM</option>
+                <option value="12:30 AM">12:30 AM</option>
+                <option value="1:00 AM">1:00 AM</option>
+                <option value="1:30 AM">1:30 AM</option>
+                <option value="2:00 AM">2:00 AM</option>
+                <option value="2:30 AM">2:30 AM</option>
+                <option value="3:00 AM">3:00 AM</option>
+                <option value="3:30 AM">3:30 AM</option>
+                <option value="4:00 AM">4:00 AM</option>
+                <option value="4:30 AM">4:30 AM</option>
+                <option value="5:00 AM">5:00 AM</option>
+                <option value="5:30 AM">5:30 AM</option>
+                <option value="6:00 AM">6:00 AM</option>
+                <option value="6:30 AM">6:30 AM</option>
+                <option value="7:00 AM">7:00 AM</option>
+                <option value="7:30 AM">7:30 AM</option>
+                <option value="8:00 AM">8:00 AM</option>
+                <option value="8:30 AM">8:30 AM</option>
+                <option value="9:00 AM">9:00 AM</option>
+                <option value="9:30 AM">9:30 AM</option>
+                <option value="10:00 AM">10:00 AM</option>
+                <option value="10:30 AM">10:30 AM</option>
+                <option value="11:00 AM">11:00 AM</option>
+                <option value="11:30 AM">11:30 AM</option>
+                <option value="12:00 PM">12:00 PM</option>
+                <option value="12:30 PM">12:30 PM</option>
+                <option value="1:00 PM">1:00 PM</option>
+                <option value="1:30 PM">1:30 PM</option>
+                <option value="2:00 PM">2:00 PM</option>
+                <option value="2:30 PM">2:30 PM</option>
+                <option value="3:00 PM">3:00 PM</option>
+                <option value="3:30 PM">3:30 PM</option>
+                <option value="4:00 PM">4:00 PM</option>
+                <option value="4:30 PM">4:30 PM</option>
+                <option value="5:00 PM">5:00 PM</option>
+                <option value="5:30 PM">5:30 PM</option>
+                <option value="6:00 PM">6:00 PM</option>
+                <option value="6:30 PM">6:30 PM</option>
+                <option value="7:00 PM">7:00 PM</option>
+                <option value="7:30 PM">7:30 PM</option>
+                <option value="8:00 PM">8:00 PM</option>
+                <option value="8:30 PM">8:30 PM</option>
+                <option value="9:00 PM">9:00 PM</option>
+                <option value="9:30 PM">9:30 PM</option>
+                <option value="10:00 PM">10:00 PM</option>
+                <option value="10:30 PM">10:30 PM</option>
+                <option value="11:00 PM">11:00 PM</option>
+                <option value="11:30 PM">11:30 PM</option>
+              </optgroup>
+              <optgroup label="Study Durations (30-min increments)">
+                <option value="30 mins">30 mins</option>
+                <option value="1 hour">1 hour</option>
+                <option value="1 hr 30 mins">1 hr 30 mins</option>
+                <option value="2 hours">2 hours</option>
+                <option value="2 hrs 30 mins">2 hrs 30 mins</option>
+                <option value="3 hours">3 hours</option>
+                <option value="3 hrs 30 mins">3 hrs 30 mins</option>
+                <option value="4 hours">4 hours</option>
+                <option value="4 hrs 30 mins">4 hrs 30 mins</option>
+                <option value="5 hours">5 hours</option>
+                <option value="5+ hours">5+ hours</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <span>＋</span> Add to Schedule
+        </button>
+      </form>
+    </div>
+
+    <!-- Task List Controls -->
+    <div class="list-header">
+      <div class="filter-tabs">
+        <button class="filter-btn active" data-filter="all">All Tasks</button>
+        <button class="filter-btn" data-filter="high">🔴 High Priority</button>
+        <button class="filter-btn" data-filter="active">Active</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+      </div>
+
+      <div class="list-actions">
+        <button class="btn btn-secondary" id="sortByPriorityBtn" title="Group and sort tasks from High to Low priority">
+          ⚡ Re-sort by Priority
+        </button>
+        <button class="btn btn-secondary" id="clearCompletedBtn" title="Remove finished tasks">
+          🗑️ Clear Done
+        </button>
+      </div>
+    </div>
+
+    <!-- Task List Container -->
+    <main class="task-list" id="taskList" aria-live="polite">
+      <!-- Task cards will render dynamically here -->
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p>💡 Tip: Use the ▲ and ▼ buttons on each task card to adjust your custom schedule order for the day.</p>
+    </footer>
+  </div>
+
+  <script>
+    // Storage Key
+    const STORAGE_KEY = 'studysprint_tasks_data';
+
+    // Initial starter tasks for first-time visitors
+    const DEFAULT_TASKS = [
+      {
+        id: 'task_demo_1',
+        title: 'Review Chapter 4 Problem Set for Quiz',
+        course: 'Math 101',
+        priority: 'high',
+        time: '1 hour',
+        completed: false,
+        rank: 1
+      },
+      {
+        id: 'task_demo_2',
+        title: 'Draft thesis statement and sources outline',
+        course: 'History Essay',
+        priority: 'med',
+        time: '5:00 PM',
+        completed: false,
+        rank: 2
+      },
+      {
+        id: 'task_demo_3',
+        title: 'Organize digital flashcards for upcoming midterm',
+        course: 'Biology',
+        priority: 'low',
+        time: '30 mins',
+        completed: true,
+        rank: 3
+      }
+    ];
+
+    // App State
+    let tasks = loadTasks();
+    let currentFilter = 'all';
+
+    // DOM References
+    const taskForm = document.getElementById('taskForm');
+    const taskTitleInput = document.getElementById('taskTitle');
+    const taskCourseInput = document.getElementById('taskCourse');
+    const taskPriorityInput = document.getElementById('taskPriority');
+    const taskTimeInput = document.getElementById('taskTime');
+    const taskList = document.getElementById('taskList');
+    const progressStats = document.getElementById('progressStats');
+    const progressFill = document.getElementById('progressFill');
+    const alertBanner = document.getElementById('alertBanner');
+    const alertText = document.getElementById('alertText');
+    const alertIcon = document.getElementById('alertIcon');
+    const alertCloseBtn = document.getElementById('alertCloseBtn');
+    const clearCompletedBtn = document.getElementById('clearCompletedBtn');
+    const sortByPriorityBtn = document.getElementById('sortByPriorityBtn');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+
+    // Priority ordering weights
+    const PRIORITY_WEIGHTS = { high: 1, med: 2, low: 3 };
+
+    // --- Persistence ---
+    function loadTasks() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (e) {
+        console.warn('Could not read from localStorage, using defaults.', e);
+      }
+      return [...DEFAULT_TASKS];
+    }
+
+    function saveTasks() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      } catch (e) {
+        console.warn('Could not write to localStorage.', e);
+      }
+    }
+
+    // --- Friendly Error / Notification System ---
+    let alertTimer = null;
+    function showAlert(message, icon = '⚠️') {
+      alertIcon.textContent = icon;
+      alertText.textContent = message;
+      alertBanner.classList.add('visible');
+
+      if (alertTimer) clearTimeout(alertTimer);
+      alertTimer = setTimeout(() => {
+        dismissAlert();
+      }, 5000);
+    }
+
+    function dismissAlert() {
+      alertBanner.classList.remove('visible');
+      if (alertTimer) clearTimeout(alertTimer);
+    }
+
+    alertCloseBtn.addEventListener('click', dismissAlert);
+
+    // --- UI Renderers ---
+    function updateProgress() {
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.completed).length;
+      const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+      progressStats.textContent = `${completed} of ${total} tasks completed (${pct}%)`;
+      progressFill.style.width = `${pct}%`;
+    }
+
+    function getPriorityBadge(priority) {
+      if (priority === 'high') {
+        return '<span class="tag tag-high">🔴 High Priority</span>';
+      } else if (priority === 'med') {
+        return '<span class="tag tag-med">🟡 Medium Priority</span>';
+      }
+      return '<span class="tag tag-low">🟢 Low Priority</span>';
+    }
+
+    function sanitizeHTML(str) {
+      const temp = document.createElement('div');
+      temp.textContent = str || '';
+      return temp.innerHTML;
+    }
+
+    function renderTasks() {
+      updateProgress();
+
+      // Filter tasks
+      let filtered = tasks.filter(task => {
+        if (currentFilter === 'high') return task.priority === 'high';
+        if (currentFilter === 'active') return !task.completed;
+        if (currentFilter === 'completed') return task.completed;
+        return true;
+      });
+
+      taskList.innerHTML = '';
+
+      if (filtered.length === 0) {
+        let emptyHeading = 'No tasks found';
+        let emptyMessage = 'Add a task above to start scheduling your study day.';
+
+        if (tasks.length === 0) {
+          emptyHeading = 'Your schedule is clear! 🎓';
+          emptyMessage = 'Add your first assignment, study goal, or project task above.';
+        } else if (currentFilter === 'completed') {
+          emptyHeading = 'No completed tasks yet';
+          emptyMessage = 'Finish a study task and check it off to celebrate your progress!';
+        } else if (currentFilter === 'high') {
+          emptyHeading = 'No urgent tasks! 🎉';
+          emptyMessage = 'You have no high-priority deadlines today. Great job keeping ahead!';
+        } else if (currentFilter === 'active') {
+          emptyHeading = 'All caught up! 🌟';
+          emptyMessage = 'You have completed all your tasks for today. Outstanding work!';
+        }
+
+        taskList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <h3>${emptyHeading}</h3>
+            <p>${emptyMessage}</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach((task, index) => {
+        // Find absolute index in main array for reordering
+        const masterIndex = tasks.findIndex(t => t.id === task.id);
+        const isFirst = masterIndex === 0;
+        const isLast = masterIndex === tasks.length - 1;
+
+        const card = document.createElement('div');
+        card.className = `task-card priority-${task.priority} ${task.completed ? 'completed' : ''}`;
+        card.dataset.id = task.id;
+
+        const safeTitle = sanitizeHTML(task.title);
+        const safeCourse = task.course ? sanitizeHTML(task.course) : '';
+        const safeTime = task.time ? sanitizeHTML(task.time) : '';
+
+        card.innerHTML = `
+          <div class="task-main">
+            <input 
+              type="checkbox" 
+              class="custom-checkbox" 
+              ${task.completed ? 'checked' : ''} 
+              aria-label="Mark ${safeTitle} as completed"
+            />
+            <div class="task-info">
+              <div class="task-title-row">
+                <span class="task-title">${safeTitle}</span>
+              </div>
+              <div class="task-meta">
+                <span class="tag tag-rank" title="Daily Rank Priority">#${masterIndex + 1}</span>
+                ${getPriorityBadge(task.priority)}
+                ${safeCourse ? `<span class="tag tag-course">📚 ${safeCourse}</span>` : ''}
+                ${safeTime ? `<span class="tag tag-time">⏰ ${safeTime}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="task-controls">
+            <button 
+              class="icon-btn btn-up" 
+              title="Move Up in Priority Rank" 
+              ${isFirst ? 'disabled' : ''}
+              aria-label="Move task up"
+            >▲</button>
+            <button 
+              class="icon-btn btn-down" 
+              title="Move Down in Priority Rank" 
+              ${isLast ? 'disabled' : ''}
+              aria-label="Move task down"
+            >▼</button>
+            <button 
+              class="icon-btn btn-delete" 
+              title="Delete Task" 
+              aria-label="Delete task"
+            >✕</button>
+          </div>
+        `;
+
+        // Checkbox toggle
+        const checkbox = card.querySelector('.custom-checkbox');
+        checkbox.addEventListener('change', () => {
+          toggleTaskCompletion(task.id);
+        });
+
+        // Reorder buttons
+        const upBtn = card.querySelector('.btn-up');
+        upBtn.addEventListener('click', () => {
+          moveTask(masterIndex, -1);
+        });
+
+        const downBtn = card.querySelector('.btn-down');
+        downBtn.addEventListener('click', () => {
+          moveTask(masterIndex, 1);
+        });
+
+        // Delete button
+        const deleteBtn = card.querySelector('.btn-delete');
+        deleteBtn.addEventListener('click', () => {
+          deleteTask(task.id);
+        });
+
+        taskList.appendChild(card);
+      });
+    }
+
+    // --- Task Actions ---
+    function addTask(title, course, priority, time) {
+      const cleanTitle = title.trim();
+      const cleanCourse = course.trim();
+      const cleanTime = time.trim();
+
+      // Validation 1: Empty title
+      if (!cleanTitle) {
+        showAlert('Oops! Please enter a task or assignment name before adding it to your schedule.', '✏️');
+        taskTitleInput.focus();
+        return;
+      }
+
+      // Validation 2: Duplicate title warning check
+      const duplicate = tasks.find(t => t.title.toLowerCase() === cleanTitle.toLowerCase());
+      if (duplicate) {
+        showAlert('Heads up! A task with this exact name is already in your schedule.', '💡');
+      } else {
+        dismissAlert();
+      }
+
+      const newTask = {
+        id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        title: cleanTitle,
+        course: cleanCourse,
+        priority: priority,
+        time: cleanTime,
+        completed: false,
+        rank: tasks.length + 1
+      };
+
+      // Add to list: place high priority on top or append based on priority group
+      if (priority === 'high') {
+        // Find last high priority task index to place right after other high priority tasks
+        const lastHighIdx = tasks.map(t => t.priority).lastIndexOf('high');
+        if (lastHighIdx !== -1) {
+          tasks.splice(lastHighIdx + 1, 0, newTask);
+        } else {
+          tasks.unshift(newTask);
+        }
+      } else {
+        tasks.push(newTask);
+      }
+
+      saveTasks();
+      renderTasks();
+
+      // Clear input fields
+      taskTitleInput.value = '';
+      taskCourseInput.value = '';
+      taskTimeInput.value = '';
+      taskPriorityInput.value = 'high';
+      taskTitleInput.focus();
+    }
+
+    function toggleTaskCompletion(id) {
+      const target = tasks.find(t => t.id === id);
+      if (target) {
+        target.completed = !target.completed;
+        saveTasks();
+        renderTasks();
+      }
+    }
+
+    function deleteTask(id) {
+      const targetIndex = tasks.findIndex(t => t.id === id);
+      if (targetIndex !== -1) {
+        tasks.splice(targetIndex, 1);
+        saveTasks();
+        renderTasks();
+      }
+    }
+
+    function moveTask(index, offset) {
+      const targetIndex = index + offset;
+      if (targetIndex < 0 || targetIndex >= tasks.length) return;
+
+      const temp = tasks[index];
+      tasks[index] = tasks[targetIndex];
+      tasks[targetIndex] = temp;
+
+      saveTasks();
+      renderTasks();
+    }
+
+    function sortByPriority() {
+      if (tasks.length <= 1) return;
+
+      tasks.sort((a, b) => {
+        // 1. Keep incomplete tasks above completed tasks
+        if (a.completed !== b.completed) {
+          return a.completed ? 1 : -1;
+        }
+        // 2. High > Med > Low
+        return PRIORITY_WEIGHTS[a.priority] - PRIORITY_WEIGHTS[b.priority];
+      });
+
+      saveTasks();
+      renderTasks();
+      showAlert('Tasks have been re-ordered by priority (High ➔ Medium ➔ Low)!', '⚡');
+    }
+
+    function clearCompleted() {
+      const completedCount = tasks.filter(t => t.completed).length;
+      if (completedCount === 0) {
+        showAlert('You have no completed tasks to clear right now.', 'ℹ️');
+        return;
+      }
+
+      tasks = tasks.filter(t => !t.completed);
+      saveTasks();
+      renderTasks();
+      showAlert(`Cleaned up ${completedCount} finished task${completedCount > 1 ? 's' : ''}! Keep up the momentum.`, '✨');
+    }
+
+    // --- Event Listeners ---
+    taskForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      addTask(
+        taskTitleInput.value,
+        taskCourseInput.value,
+        taskPriorityInput.value,
+        taskTimeInput.value
+      );
+    });
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderTasks();
+      });
+    });
+
+    sortByPriorityBtn.addEventListener('click', sortByPriority);
+    clearCompletedBtn.addEventListener('click', clearCompleted);
+
+    // Initial render
+    renderTasks();
+  </script>
+</body>
+</html>
